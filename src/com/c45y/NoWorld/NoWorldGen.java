@@ -8,14 +8,17 @@ import org.bukkit.World;
 public class NoWorldGen extends ChunkGenerator
 {
 	@Override
-	public Location getFixedSpawnLocation(World world, Random random)
-	{
+	public Location getFixedSpawnLocation(World world, Random random) {
 		return new Location(world, 0, 64, 0);
 	}
-	
+
 	@Override
-	public byte[] generate(World world, Random rand, int chx, int chz)
-	{
+	public boolean canSpawn(World world, int x, int z) {
+		return true;
+	}
+
+	@Override
+	public byte[] generate(World world, Random rand, int chx, int chz)	{
 		return new byte[32768];
 	}
 }
