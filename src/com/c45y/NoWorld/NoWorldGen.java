@@ -10,7 +10,7 @@ public class NoWorldGen extends ChunkGenerator
 {
 	@Override
 	public Location getFixedSpawnLocation(World world, Random random) {
-		return new Location(world, 0, 64, 0);
+		return new Location(world, 0, 17, 0);
 	}
 
 	@Override
@@ -20,17 +20,19 @@ public class NoWorldGen extends ChunkGenerator
 
 	public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomeGrid)
 	{
-		System.out.println("X: " + chunkX % 2 * 16 + " Z: " + chunkZ % 2 * 16);
 		byte[][] result = new byte[256 / 16][]; //world height / chunk part height (=16, look above)
+		byte bld = bldat[random.nextInt(bldat.length)];
 		int x = 0, y = 0, z = 0;
-		this.i = (this.i % 4) + 1;
 		for(x = 0; x < 16; x++)
 		{
 			for(z = 0; z < 16; z++)
 			{
 				for(y = 0; y < 16; y++) {
-					if (distance(chunkX % 2 * 16,chunkZ % 2 * 16 ,x ,y ,z) < 15) {
-						setBlock(result, x, y, z, (byte) this.i);
+					int distance = (int) distance(chunkX % 2 * 16,chunkZ % 2 * 16 ,x ,y ,z);
+					if (distance < 15) {
+						setBlock(result, x, y, z, bld);
+					} else if (distance == 15) {
+						setBlock(result, x, y, z, (byte) 7);
 					}
 
 				}
@@ -47,13 +49,9 @@ public class NoWorldGen extends ChunkGenerator
 		result[y >> 4][((y & 0xF) << 8) | (z << 4) | x] = blkid;
 	}
 
-	private int coordsToInt(int x, int y, int z) {
-		return (x * 64 + z) * 256 + y;
-	}
-
 	public double distance(int sx, int sz, int x, int y, int z)	{
 		return Math.sqrt(Math.pow(Math.abs(sx) - x, 2.0D) + Math.pow(15 - y, 2.0D) + Math.pow(Math.abs(sz) - z, 2.0D));
 	}
 	
-	private int i = 0;
+	private byte bldat[] = {1,2,5,24};
 }

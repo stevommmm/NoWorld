@@ -2,3 +2,8 @@ name: NoWorld
 main: com.c45y.NoWorld.NoWorld
 version: 0.1
 load: startup
+commands:
+  get:
+    description: asdf
+    usage: |
+           /get: get something
