@@ -2,8 +2,14 @@ name: NoWorld
 main: com.c45y.NoWorld.NoWorld
 version: 0.1
 load: startup
+permissions:
+    World.user:
+        description: A player
+        default: true
 commands:
   get:
     description: asdf
+    permission: World.user
     usage: |
            /get: get something
+           

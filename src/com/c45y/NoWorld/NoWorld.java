@@ -3,6 +3,7 @@ package com.c45y.NoWorld;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -80,18 +81,25 @@ public class NoWorld extends JavaPlugin implements Listener
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("get")) {
 			if (args.length == 1){
-				if(args[0].equals("status")) {
+				if(args[0].equals("this")) {
 					if (sender instanceof Player) {
 						Player pSender = (Player) sender;
-						sender.sendMessage("asdf" + pSender.getLocation().getChunk().toString());
+						Location l = pSender.getLocation();
+						Chunk c = l.getChunk();
+						sender.sendMessage("bl -> " + c.getBlock(0, 0, 0).toString());  //bottom left
+						sender.sendMessage("br -> " + c.getBlock(0, 0, 15).toString()); //bottom right
+						sender.sendMessage("tr -> " + c.getBlock(15, 0, 15).toString());//top right
+						sender.sendMessage("tl -> " + c.getBlock(15, 0, 0).toString()); //top left
 						return true;
 					}
-					
-					
 				}
 			}
 		}
 		return false;
+	}
+	
+	public double distance(int sx, int sz, int x, int z)	{
+		return Math.sqrt(Math.pow(Math.abs(sx) - x, 2.0D) + Math.pow(Math.abs(sz) - z, 2.0D));
 	}
 
 	private int totalPlayerCount;
