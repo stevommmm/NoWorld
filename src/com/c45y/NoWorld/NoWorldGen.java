@@ -8,16 +8,6 @@ import org.bukkit.World;
 
 public class NoWorldGen extends ChunkGenerator
 {
-	@Override
-	public Location getFixedSpawnLocation(World world, Random random) {
-		return new Location(world, 0, 17, 0);
-	}
-
-	@Override
-	public boolean canSpawn(World world, int x, int z) {
-		return true;
-	}
-
 	public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomeGrid)
 	{
 		byte[][] result = new byte[256 / 16][]; //world height / chunk part height (=16, look above)
