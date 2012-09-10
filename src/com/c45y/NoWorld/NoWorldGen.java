@@ -2,7 +2,6 @@ package com.c45y.NoWorld;
 
 import java.util.Random;
 
-import org.bukkit.Location;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.World;
 

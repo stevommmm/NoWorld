@@ -6,10 +6,13 @@ permissions:
     World.user:
         description: A player
         default: true
+    World.op:
+        description: A admin type player
+        default: false
 commands:
   get:
-    description: asdf
+    description: A general purpose command for commanding things!
     permission: World.user
     usage: |
-           /get: get something
+           /get: param
            
