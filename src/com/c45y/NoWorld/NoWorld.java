@@ -1,13 +1,11 @@
 package com.c45y.NoWorld;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,7 +27,6 @@ public class NoWorld extends JavaPlugin implements Listener
 	public void onEnable() {
 		this.getConfig().options().copyDefaults(true);
 		this.getConfig().addDefault("player.total.count", 1);
-		this.getConfig().addDefault("spawns", new ArrayList<String>());
 		getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info(this.getName() + " enabled.");
 		playerSpawns = slapi.load();
@@ -37,7 +34,7 @@ public class NoWorld extends JavaPlugin implements Listener
             public void run() {
                 slapi.save(playerSpawns);
             }
-        }, 1200, 1200); // 10 Minutes
+        }, 1200, 1200); // 1 Minute saves
 	}
 
 	public void onDisable()	{
@@ -52,8 +49,7 @@ public class NoWorld extends JavaPlugin implements Listener
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onWorldInit(WorldInitEvent event) {
-		defaultSpawn = new Location(event.getWorld(), 0.5, 17, 0.5);
-		getLogger().info("Spawn location set.");
+		getLogger().info("Init World");
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -89,7 +85,6 @@ public class NoWorld extends JavaPlugin implements Listener
 			return;
 		}
 		if( playerSpawns.containsKey(event.getPlayer().getName())) {
-			System.out.println(distance(playerSpawns.get(event.getPlayer().getName()), event.getBlock().getLocation()));
 			if(distance(playerSpawns.get(event.getPlayer().getName()), event.getBlock().getLocation()) <= 15.5) {
 				return;
 			}
@@ -107,6 +102,10 @@ public class NoWorld extends JavaPlugin implements Listener
 						String player = pSender.getName();
 						if( args.length == 2 && !args[1].isEmpty() && pSender.hasPermission("World.op")) {
 							Location totp = getCenterSphere(pSender.getLocation());
+							if (totp == null) {
+								pSender.sendMessage("This is not a sphere :/");
+								return true;
+							}
 							if (playerSpawns.containsValue(totp)) {
 								pSender.sendMessage("Sorry somebody already claimed that sphere");
 							} else {
@@ -116,11 +115,14 @@ public class NoWorld extends JavaPlugin implements Listener
 							}
 							return true;
 						}
-
 						if( playerSpawns.containsKey(player)) {
 							pSender.sendMessage("You already own a sphere of land");
 						} else {
 							Location totp = getCenterSphere(pSender.getLocation());
+							if (totp == null) {
+								pSender.sendMessage("This is not a sphere :/");
+								return true;
+							}
 							if (playerSpawns.containsValue(totp)) {
 								pSender.sendMessage("Sorry somebody already claimed that sphere");
 							} else {
@@ -137,6 +139,10 @@ public class NoWorld extends JavaPlugin implements Listener
 						Player pSender = (Player) sender;
 						if (pSender.hasPermission("World.op")) {
 							Location totp = getCenterSphere(pSender.getLocation());
+							if (totp == null) {
+								pSender.sendMessage("This is not a sphere :/");
+								return true;
+							}
 							if (playerSpawns.containsValue(totp)) {
 								for (Entry<String, Location> entry : playerSpawns.entrySet()) {
 									if (entry.getValue().equals(totp)) {
@@ -177,6 +183,10 @@ public class NoWorld extends JavaPlugin implements Listener
 				if(args[0].equals("who")) {
 					Player pSender = (Player) sender;
 					Location totp = getCenterSphere(pSender.getLocation());
+					if (totp == null) {
+						pSender.sendMessage("This is not a sphere :/");
+						return true;
+					}
 					for (Entry<String, Location> entry : playerSpawns.entrySet()) {
 						if (entry.getValue().equals(totp)) {
 							pSender.sendMessage("This sphere owned by: " + entry.getKey());
@@ -193,49 +203,42 @@ public class NoWorld extends JavaPlugin implements Listener
 
 	public Location getCenterSphere(Location location) {
 		Chunk c = location.getChunk();
-		World w = this.getServer().getWorlds().get(0);
-		int x = Math.abs(c.getX() % 2);
-		int z = Math.abs(c.getZ() % 2);
-		//int distance = (int) distance(c.getX() % 2 * 16,c.getZ() % 2 * 16 ,location.getBlockX() , 17, location.getBlockZ());
-		//System.out.println("x: " + x + "; z " + z + "; d: " + distance);
-		if (x == 1 && z == 0) { //SW
-			System.out.println("SW");
-			Location l = c.getBlock(15, 20, 0).getLocation();
-			l.setX(l.getX() + 1);
-			return l;
+		int valueX = (c.getX()>0) ? c.getX()+1 : c.getX();
+		int valueZ = (c.getZ()>0) ? c.getZ()+1 : c.getZ();
+		if((valueX/2 % 2 == 0) && (valueZ/2 % 2 == 0)) {
+			int x = Math.abs(c.getX() % 2);
+			int z = Math.abs(c.getZ() % 2);
+			//int distance = (int) distance(c.getX() % 2 * 16,c.getZ() % 2 * 16 ,location.getBlockX() , 17, location.getBlockZ());
+			//System.out.println("x: " + x + "; z " + z + "; d: " + distance);
+			if (x == 1 && z == 0) { //SW
+				Location l = c.getBlock(15, 20, 0).getLocation();
+				l.setX(l.getX() + 1);
+				return l;
+			}
+			if (x == 1 && z == 1) { //NW
+				Location l = c.getBlock(15, 20, 15).getLocation();
+				l.setX(l.getX() + 1);
+				l.setZ(l.getZ() + 1);
+				return l;
+			}
+			if (x == 0 && z == 1) { //NE
+				Location l = c.getBlock(0, 20, 15).getLocation();
+				l.setZ(l.getZ() + 1);
+				return l;
+			}
+			if (x == 0 && z == 0) { //SE -
+				return c.getBlock(0, 20, 0).getLocation();
+			}
 		}
-		if (x == 1 && z == 1) { //NW
-			System.out.println("NW");
-			Location l = c.getBlock(15, 20, 15).getLocation();
-			l.setX(l.getX() + 1);
-			l.setZ(l.getZ() + 1);
-			return l;
-		}
-		if (x == 0 && z == 1) { //NE
-			System.out.println("NE");
-			Location l = c.getBlock(0, 20, 15).getLocation();
-			l.setZ(l.getZ() + 1);
-			return l;
-		}
-		if (x == 0 && z == 0) { //SE -
-			System.out.println("SE");
-			return c.getBlock(0, 20, 0).getLocation();
-		}
-		return defaultSpawn;
+		return null;
 	}
 
 	public double distance(Location pl, Location wo) {
 		wo.setY(pl.getY());
 		return pl.distance(wo);
-		//return distance((int)wo.getX(), (int)wo.getY(),(int)wo.getZ(), (int)pl.getX(), (int)wo.getY(), (int)pl.getZ());
 	}
-	
-	//public double distance(int sx, int sz, int x, int y, int z)	{
-	//	return Math.sqrt(Math.pow(Math.abs(sx) - x, 2.0D) + Math.pow(15 - y, 2.0D) + Math.pow(Math.abs(sz) - z, 2.0D));
-	//}
 
 	private int totalPlayerCount;
 	private HashMap<String, Location> playerSpawns = new HashMap<String, Location>();
-	private Location defaultSpawn;
 	private SLAPI slapi = new SLAPI(this);
 }

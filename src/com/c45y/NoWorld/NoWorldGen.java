@@ -10,6 +10,11 @@ public class NoWorldGen extends ChunkGenerator
 	public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomeGrid)
 	{
 		byte[][] result = new byte[256 / 16][]; //world height / chunk part height (=16, look above)
+		int valueX = (chunkX>0) ? chunkX+1 : chunkX;
+		int valueZ = (chunkZ>0) ? chunkZ+1 : chunkZ;
+		if((valueX/2 % 2 == 0) && (valueZ/2 % 2 == 0)) {
+			//return result;
+		
 		byte bld = bldat[random.nextInt(bldat.length)];
 		int x = 0, y = 0, z = 0;
 		for(x = 0; x < 16; x++)
@@ -26,6 +31,7 @@ public class NoWorldGen extends ChunkGenerator
 
 				}
 			}
+		}
 		}
 		return result;
 	}
