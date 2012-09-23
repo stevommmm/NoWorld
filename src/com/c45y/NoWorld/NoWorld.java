@@ -15,7 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.world.WorldInitEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,7 +29,6 @@ public class NoWorld extends JavaPlugin implements Listener
 		this.getConfig().addDefault("player.total.count", 1);
 		getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info(this.getName() + " enabled.");
-		playerSpawns = slapi.load();
 		getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
             public void run() {
                 slapi.save(playerSpawns);
@@ -48,8 +47,10 @@ public class NoWorld extends JavaPlugin implements Listener
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onWorldInit(WorldInitEvent event) {
-		getLogger().info("Init World");
+	public void onWorldLoad(WorldLoadEvent event) {
+		if(playerSpawns.isEmpty()) {
+			playerSpawns = slapi.load();
+		}
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -96,12 +97,13 @@ public class NoWorld extends JavaPlugin implements Listener
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("get")) {
 			if (args.length >= 1){
+				Player pSender = (Player) sender;
+				String player = pSender.getName();
+				Location l = pSender.getLocation();
+				Location totp = getCenterSphere(l);
 				if(args[0].equals("this")) {
 					if (sender instanceof Player) {
-						Player pSender = (Player) sender;
-						String player = pSender.getName();
 						if( args.length == 2 && !args[1].isEmpty() && pSender.hasPermission("World.op")) {
-							Location totp = getCenterSphere(pSender.getLocation());
 							if (totp == null) {
 								pSender.sendMessage("This is not a sphere :/");
 								return true;
@@ -118,7 +120,6 @@ public class NoWorld extends JavaPlugin implements Listener
 						if( playerSpawns.containsKey(player)) {
 							pSender.sendMessage("You already own a sphere of land");
 						} else {
-							Location totp = getCenterSphere(pSender.getLocation());
 							if (totp == null) {
 								pSender.sendMessage("This is not a sphere :/");
 								return true;
@@ -136,9 +137,7 @@ public class NoWorld extends JavaPlugin implements Listener
 				}
 				if(args[0].equals("unthis")) {
 					if (sender instanceof Player) {
-						Player pSender = (Player) sender;
 						if (pSender.hasPermission("World.op")) {
-							Location totp = getCenterSphere(pSender.getLocation());
 							if (totp == null) {
 								pSender.sendMessage("This is not a sphere :/");
 								return true;
@@ -158,8 +157,6 @@ public class NoWorld extends JavaPlugin implements Listener
 				}
 				if(args[0].equals("home")) {
 					if (sender instanceof Player) {
-						Player pSender = (Player) sender;
-						String player = pSender.getName();
 						if( args.length == 2 && !args[1].isEmpty() ) {
 							player = args[1];
 						}
@@ -172,7 +169,6 @@ public class NoWorld extends JavaPlugin implements Listener
 					}
 				}
 				if(args[0].equals("list")) {
-					Player pSender = (Player) sender;
 					for (Entry<String, Location> entry : playerSpawns.entrySet()) {
 						String key = entry.getKey();
 						Object value = entry.getValue();
@@ -181,8 +177,6 @@ public class NoWorld extends JavaPlugin implements Listener
 					return true;
 				}
 				if(args[0].equals("who")) {
-					Player pSender = (Player) sender;
-					Location totp = getCenterSphere(pSender.getLocation());
 					if (totp == null) {
 						pSender.sendMessage("This is not a sphere :/");
 						return true;

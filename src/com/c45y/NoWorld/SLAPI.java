@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,7 +22,7 @@ public class SLAPI
 		for (Entry<String, Location> entry : hm.entrySet()) {
 			String player = entry.getKey();
 			Location l = entry.getValue();
-			al.add(player + "," + l.getX() + "," +  l.getY() + "," +  l.getZ());
+			al.add(player + "," + l.getX() + "," +  l.getY() + "," +  l.getZ() + "," + l.getWorld().getName());
 		}
 		this.plugin.getConfig().set("spawns", al);
 		this.plugin.saveConfig();
@@ -30,11 +31,12 @@ public class SLAPI
     public HashMap<String, Location> load()
     {
     	HashMap<String, Location> playerSpawns = new HashMap<String, Location>();
-    	List<String> s =  plugin.getConfig().getStringList("locations");
+    	List<String> s =  plugin.getConfig().getStringList("spawns");
     	for(String loc:s){
+    		plugin.getLogger().info(loc);
     		String [] arg = loc.split(",");
     		String player = arg[0];
-    		World world = plugin.getServer().getWorld("world");
+    		World world = Bukkit.getWorld(arg[4]);
     		double x = Double.parseDouble(arg[1]);
     		double y = Double.parseDouble(arg[2]);
     		double z = Double.parseDouble(arg[3]);

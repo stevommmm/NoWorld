@@ -8,7 +8,7 @@ permissions:
         default: true
     World.op:
         description: A admin type player
-        default: false
+        default: op
 commands:
   get:
     description: A general purpose command for commanding things!
