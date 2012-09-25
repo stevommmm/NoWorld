@@ -7,6 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -15,6 +16,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -94,6 +97,26 @@ public class NoWorld extends JavaPlugin implements Listener
 		}
 		if( playerSpawns.containsKey(event.getPlayer().getName())) {
 			if(distance(playerSpawns.get(event.getPlayer().getName()), event.getBlock().getLocation()) <= 15.5) {
+				return;
+			}
+		}
+		event.setCancelled(true);
+	}
+	
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+	public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+		if( playerSpawns.containsKey(event.getPlayer().getName())) {
+			if(distance(playerSpawns.get(event.getPlayer().getName()), event.getBlockClicked().getLocation()) <= 15.5) {
+				return;
+			}
+		}
+		event.setCancelled(true);
+	}
+
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+	public void onPlayerBucketFill(PlayerBucketFillEvent event) {
+		if( playerSpawns.containsKey(event.getPlayer().getName())) {
+			if(distance(playerSpawns.get(event.getPlayer().getName()), event.getBlockClicked().getLocation()) <= 15.5) {
 				return;
 			}
 		}
