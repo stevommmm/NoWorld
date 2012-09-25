@@ -6,6 +6,9 @@ permissions:
     World.user:
         description: A player
         default: true
+    World.vote:
+        description: A voting player
+        default: true
     World.op:
         description: A admin type player
         default: op
@@ -14,5 +17,9 @@ commands:
     description: A general purpose command for commanding things!
     permission: World.user
     usage: |
-           /get: param
-           
+           /get: [this, who, home]
+  vote:
+    description: Vote for your favorite build!
+    permission: World.vote
+    usage: |
+           /vote: [1, 2, 3]

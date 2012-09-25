@@ -3,6 +3,7 @@ package com.c45y.NoWorld;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -51,6 +53,11 @@ public class NoWorld extends JavaPlugin implements Listener
 		if(playerSpawns.isEmpty()) {
 			playerSpawns = slapi.load();
 		}
+	}
+	
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+	public void onWeatherChange(WeatherChangeEvent event) {
+		event.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -105,30 +112,30 @@ public class NoWorld extends JavaPlugin implements Listener
 					if (sender instanceof Player) {
 						if( args.length == 2 && !args[1].isEmpty() && pSender.hasPermission("World.op")) {
 							if (totp == null) {
-								pSender.sendMessage("This is not a sphere :/");
+								pSender.sendMessage(ChatColor.RED + "This is not a sphere :/");
 								return true;
 							}
 							if (playerSpawns.containsValue(totp)) {
-								pSender.sendMessage("Sorry somebody already claimed that sphere");
+								pSender.sendMessage(ChatColor.AQUA + "Sorry somebody already claimed that sphere");
 							} else {
 								playerSpawns.put(args[1], totp);
-								pSender.sendMessage("You have claimed this sphere for " + args[1]);
+								pSender.sendMessage(ChatColor.AQUA + "You have claimed this sphere for " + args[1]);
 								pSender.teleport(totp);
 							}
 							return true;
 						}
 						if( playerSpawns.containsKey(player)) {
-							pSender.sendMessage("You already own a sphere of land");
+							pSender.sendMessage(ChatColor.RED + "You already own a sphere of land");
 						} else {
 							if (totp == null) {
-								pSender.sendMessage("This is not a sphere :/");
+								pSender.sendMessage(ChatColor.RED + "This is not a sphere :/");
 								return true;
 							}
 							if (playerSpawns.containsValue(totp)) {
-								pSender.sendMessage("Sorry somebody already claimed that sphere");
+								pSender.sendMessage(ChatColor.AQUA + "Sorry somebody already claimed that sphere");
 							} else {
 								playerSpawns.put(player, totp);
-								pSender.sendMessage("You have claimed this sphere");
+								pSender.sendMessage(ChatColor.AQUA + "You have claimed this sphere");
 								pSender.teleport(totp);
 							}
 						}
@@ -139,14 +146,14 @@ public class NoWorld extends JavaPlugin implements Listener
 					if (sender instanceof Player) {
 						if (pSender.hasPermission("World.op")) {
 							if (totp == null) {
-								pSender.sendMessage("This is not a sphere :/");
+								pSender.sendMessage(ChatColor.RED + "This is not a sphere :/");
 								return true;
 							}
 							if (playerSpawns.containsValue(totp)) {
 								for (Entry<String, Location> entry : playerSpawns.entrySet()) {
 									if (entry.getValue().equals(totp)) {
 										playerSpawns.remove(entry.getKey());
-										pSender.sendMessage("Unclaimed this sphere");
+										pSender.sendMessage(ChatColor.AQUA + "Unclaimed this sphere");
 										return true;
 									}
 								}
@@ -163,36 +170,81 @@ public class NoWorld extends JavaPlugin implements Listener
 						if( playerSpawns.containsKey(player)) {
 							pSender.teleport(playerSpawns.get(player));
 						} else {
-							pSender.sendMessage("Sorry can't find that home");
+							pSender.sendMessage(ChatColor.RED + "Sorry can't find that home");
 						}
 						return true;
 					}
 				}
-				if(args[0].equals("list")) {
-					for (Entry<String, Location> entry : playerSpawns.entrySet()) {
-						String key = entry.getKey();
-						Object value = entry.getValue();
-						pSender.sendMessage(key + " = " + value);
-					}
-					return true;
-				}
+//				if(args[0].equals("list")) {
+//					for (Entry<String, Location> entry : playerSpawns.entrySet()) {
+//						String key = entry.getKey();
+//						Object value = entry.getValue();
+//						pSender.sendMessage(key + " = " + value);
+//					}
+//					return true;
+//				}
 				if(args[0].equals("who")) {
 					if (totp == null) {
-						pSender.sendMessage("This is not a sphere :/");
+						pSender.sendMessage(ChatColor.RED + "This is not a sphere :/");
 						return true;
 					}
-					for (Entry<String, Location> entry : playerSpawns.entrySet()) {
-						if (entry.getValue().equals(totp)) {
-							pSender.sendMessage("This sphere owned by: " + entry.getKey());
-							return true;
-						}
+					String owner = getOwner(totp);
+					if(owner != null) {
+						pSender.sendMessage(ChatColor.AQUA + "This sphere owned by: " + owner);
+						return true;
 					}
-					pSender.sendMessage("This sphere is not owned ");
+					pSender.sendMessage(ChatColor.AQUA + "This sphere is not owned ");
 					return true;
 				}
 			}
 		}
+		if (cmd.getName().equalsIgnoreCase("vote")) {
+			Player pSender = (Player) sender;
+			if (args.length < 1){
+				pSender.sendMessage(ChatColor.AQUA + "Use vote [1, 2, 3] while in a sphere.");
+				return true;
+			}
+			String player = pSender.getName();
+			Location l = pSender.getLocation();
+			Location totp = getCenterSphere(l);
+			String owner = getOwner(totp);
+			if (totp == null) {
+				pSender.sendMessage(ChatColor.RED + "This is not a sphere :/");
+				return true;
+			}
+			if(owner == null){
+				pSender.sendMessage(ChatColor.RED + "This is claimed by anyone :/");
+				return true;
+			}
+			if(owner.equalsIgnoreCase(player)) {
+				pSender.sendMessage(ChatColor.RED + "How about you vote for somebody else :)");
+				return true;
+			}
+			if(args[0].equalsIgnoreCase("1")) {
+				getConfig().set("votes." + player + ".one", owner);
+				pSender.sendMessage(ChatColor.AQUA + "You voted 1 for the build made by " + owner);
+			}
+			if(args[0].equals("2")) {
+				getConfig().set("votes." + player + ".two", owner);
+				pSender.sendMessage(ChatColor.AQUA + "You voted 2 for the build made by " + owner);
+			}
+			if(args[0].equals("3")) {
+				getConfig().set("votes." + player + ".three", owner);
+				pSender.sendMessage(ChatColor.AQUA + "You voted 3 for the build made by " + owner);
+			}
+			saveConfig();
+			return true;
+		}
 		return false;
+	}
+	
+	public String getOwner(Location loaction) {
+		for (Entry<String, Location> entry : playerSpawns.entrySet()) {
+			if (entry.getValue().equals(loaction)) {
+				return entry.getKey();
+			}
+		}
+		return null;
 	}
 
 	public Location getCenterSphere(Location location) {
