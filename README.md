@@ -3,6 +3,9 @@ NoWorld
 
 No other world is really like this one!
 
+![screenshot](screenshot.png)
+
+
 #### Commands ####
 
 /get this

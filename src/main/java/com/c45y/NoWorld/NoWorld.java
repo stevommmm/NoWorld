@@ -21,6 +21,7 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -236,7 +237,7 @@ public class NoWorld extends JavaPlugin implements Listener
 				return true;
 			}
 			if(owner == null){
-				pSender.sendMessage(ChatColor.RED + "This is claimed by anyone :/");
+				pSender.sendMessage(ChatColor.RED + "This is not claimed by anyone :/");
 				return true;
 			}
 			if(owner.equalsIgnoreCase(player)) {
